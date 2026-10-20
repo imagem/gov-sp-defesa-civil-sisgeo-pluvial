@@ -21,7 +21,7 @@ describe("modoEnterprise", () => {
   it("liga quando flag e App ID estao presentes", () => {
     vi.stubEnv("VITE_MODO_ENTERPRISE", "true");
     vi.stubEnv("VITE_ARCGIS_APP_ID", "abc123");
-    vi.stubEnv("VITE_ARCGIS_PORTAL_URL", "https://saopaulo.img.com.br/portal");
+    vi.stubEnv("VITE_ARCGIS_PORTAL_URL", "https://portal.exemplo.gov.br/portal");
     expect(modoEnterprise()).toBe(true);
   });
 
@@ -33,7 +33,7 @@ describe("modoEnterprise", () => {
   it("distingue ligado-mas-sem-sessao de conectado quando o Enterprise esta ligado", () => {
     vi.stubEnv("VITE_MODO_ENTERPRISE", "true");
     vi.stubEnv("VITE_ARCGIS_APP_ID", "abc123");
-    vi.stubEnv("VITE_ARCGIS_PORTAL_URL", "https://saopaulo.img.com.br/portal");
+    vi.stubEnv("VITE_ARCGIS_PORTAL_URL", "https://portal.exemplo.gov.br/portal");
 
     const verificando = descreverModo();
     const semSessao = descreverModo(false);

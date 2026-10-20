@@ -1,289 +1,186 @@
 # Sala de Situação — Alerta Precoce de Cheias
 
-Demonstração web interativa de uma **sala de situação multi-agente** para
-**alerta precoce de cheias** e **gêmeo digital de bacia hidrográfica**, voltada
-à Defesa Civil do Estado de São Paulo.
+![Centro operacional da sala de situação no cenário "Céu limpo"](pics/demo-screenshot-1.png)
+![Painel "Confiabilidade do sistema" expandido no cenário "Falha na rede de estações"](pics/demo-screenshot-2.png)
+![Página "Agentes & Fluxo" com os doze especialistas e o grafo do dado](pics/demo-screenshot-3.png)
+![Camadas de risco e fila de alertas no cenário "Evento extremo prolongado"](pics/demo-screenshot-4.png)
 
-> **Esta é uma demonstração com dados sintéticos.** Nenhuma fonte real é
-> consultada. A previsão de nível é uma curva de resposta paramétrica — não um
-> modelo hidrológico. O boletim é composto por template — não por LLM. Nada
-> aqui deve ser apresentado como capacidade preditiva operacional.
+## Catálogo da demonstração
 
----
+| Campo | Informação |
+| --- | --- |
+| Autor | Rodolfo G. Lotte — Arquiteto de Negócios IA |
+| Data | Outubro de 2026 |
+| Destinatário original | Defesa Civil do Estado de São Paulo (Coordenadoria Estadual de Proteção e Defesa Civil) |
+| Público de referência | Gestores públicos, equipes de defesa civil, hidrologia operacional, operações de monitoramento, TI/GIS e governança de dados territoriais |
+| Indústria | Governo, gestão de risco de desastres, meteorologia e hidrologia operacional, infraestrutura hídrica, inteligência territorial e operação pública de alerta à população |
+| Tipo | Demonstração interativa, ambiente simulado, frontend React/Vite com ArcGIS Maps SDK |
+| Objetivo comercial | Apoiar conversas consultivas sobre sala de situação multi-agente, alerta precoce espacializado, gêmeo digital de bacia, governança da decisão e integração com ArcGIS Enterprise |
+| Reaproveitamento | Clientes com responsabilidade por alerta à população, monitoramento hidrometeorológico, operação de bacias, plano de contingência, saneamento, infraestrutura hídrica e necessidade de decisão humana auditável |
+| Status | Demonstração funcional com dados sintéticos reproduzíveis e basemap OpenStreetMap |
 
-## Sumário
+## Resumo
 
-- [Visão geral](#visão-geral)
-- [O que a demonstração mostra](#o-que-a-demonstração-mostra)
-- [Páginas e navegação](#páginas-e-navegação)
-- [Cenários](#cenários)
-- [Honestidade deliberada sobre cada peça](#honestidade-deliberada-sobre-cada-peça)
-- [Divergências em relação ao escopo pleno](#divergências-em-relação-ao-escopo-pleno)
-- [Estrutura do código](#estrutura-do-código)
-- [Rodar localmente](#rodar-localmente)
-- [Publicar](#publicar)
-- [Conectar ao ArcGIS Enterprise](#conectar-ao-arcgis-enterprise)
-- [Licenças de terceiros](#licenças-de-terceiros)
+A Sala de Situação — Alerta Precoce de Cheias é uma demonstração interativa de uma plataforma de defesa civil para monitoramento hidrometeorológico, modelagem de risco e expedição de alertas, desenhada para simular como agentes de IA especialistas, especialistas digitais e analistas humanos poderiam trabalhar juntos em um fluxo público de alta responsabilidade. A aplicação apresenta uma sala de situação sobre uma bacia sintética, com mapa operacional sempre montado ao fundo, cabeçalho com relógio simulado e cenário controlado pelo operador, KPIs centralizados, fila de alertas aguardando validação humana, rastreabilidade da decisão, painéis de saúde da rede e confiabilidade do sistema (métricas NSE/RMSE/MAE/viés para o modelo e POD/FAR/CSI para os gatilhos), gêmeo digital com modo what-if para operar comportas e EBAPs, e um fluxo visível de doze agentes especialistas que percorrem ingestão, qualidade do dado, saúde da rede, modelagem hidrológica, limiares, geofencing preditivo, antifadiga, assistente de plantão, expedição multicanal e trilha de auditoria. O roteiro usa cinco cenários reprodutíveis em uma bacia fictícia inspirada em Porto Alegre (céu limpo, chuva convectiva localizada, evento extremo prolongado, falha na rede de estações e leitura implausível) para demonstrar situações de operação normal, alerta antecipado, degradação graciosa e controle de qualidade do dado. A proposta não é substituir a decisão técnica, mas mostrar um modelo de trabalho em que a IA organiza a telemetria, barra dados sujos, projeta a mancha de inundação, calcula o lead time, compõe o rascunho do boletim e expede somente após a validação explícita do operador identificado. Por ser uma demonstração, os dados, resultados, previsões, boletins e parte das geometrias são sintéticos ou simplificados, servindo como material de conversa para clientes de governo, defesa civil, infraestrutura hídrica, saneamento, agricultura, logística, mineração e demais setores que lidam com monitoramento, alerta precoce e grande volume de decisão sob pressão.
 
----
+## Estrutura regularizada
 
-## Visão geral
+Estrutura mínima para publicação na Vercel com o build do Vite:
 
-A aplicação encena, com dados fictícios porém coerentes, o ciclo completo de uma
-sala de situação de defesa civil para enchentes:
-
-**ingestão → qualidade do dado → modelagem → limiar → geofencing preditivo →
-validação humana → expedição multicanal → auditoria.**
-
-A ênfase não é visualização — é **governança da decisão**: nenhum alerta sai
-sem a validação explícita de um operador identificado, e isso é garantido em
-código (não apenas na interface), com testes em três camadas.
-
-A ferramenta serve a dois públicos:
-
-- **Gestores e lideranças institucionais** — para enxergar a forma do produto e
-  o fluxo de decisão sem precisar de jargão técnico.
-- **Equipes técnicas (hidrologia, TI, GIS)** — para conferir a arquitetura, os
-  critérios de qualidade do dado, as métricas de desempenho e os pontos de
-  integração com um ArcGIS Enterprise.
-
----
-
-## O que a demonstração mostra
-
-**Doze agentes especialistas**, cada um com um papel claro na cadeia, operando
-sobre uma bacia sintética gerada proceduralmente:
-
-| Agente | Módulo | Requisitos (código técnico) |
-|---|---|---|
-| Ingestão CEMADEN / ANA / INMET | ING | RF-ING-01/02/05 |
-| Controle de qualidade | ING | RF-ING-04 |
-| Saúde da rede | NET | RF-NET-01 |
-| Modelagem hidrológica | MOD | RF-MOD-02/04 |
-| Motor de limiares | ALT | RF-ALT-01/02/05 |
-| Geofencing preditivo | ALT | RF-ALT-03 |
-| Antifadiga de alerta | ALT | RF-ALT-05 |
-| Assistente de plantão | LLM | RF-LLM-01/03/05 |
-| Expedição multicanal | EXP | RF-EXP-02, **RNF-18** |
-| Trilha de auditoria | GOV | RF-GOV-02 |
-
-> **O ponto central da demonstração** é que o agente de expedição permanece
-> *bloqueado* até um operador identificado validar o alerta. Isso não é uma
-> limitação da demo — é o **RNF-18** da especificação funcionando. A função
-> `expedir()` lança exceção se chamada sobre alerta não validado, e há teste
-> automatizado garantindo isso.
-
-### Painéis adicionais
-
-- **Desempenho — modelo e alerta** (RF-MOD-03 e RF-ALT-06): calcula
-  NSE/RMSE/MAE/viés e POD/FAR/CSI com as fórmulas reais sobre as séries da
-  própria simulação (previsto × realizado; zonas alertadas × zonas inundadas).
-  Os valores ficam rotulados como **sintéticos** — demonstram a métrica, não
-  são medição operacional. Ver `src/dominio/metricas.ts`,
-  `src/dominio/desempenho.ts` e `src/estado/desempenho.ts`.
-- **Gêmeo digital — simulação de operação** (RF-TWN): modo *what-if* que
-  permite operar comportas/EBAPs e ver o efeito sistêmico (rede de influência)
-  sobre a cota por zona e a população exposta, com os ativos recoloridos no
-  mapa por estado. É simulação — não dispara nem expede alerta; coeficientes
-  sintéticos. Ver `src/dominio/twin.ts` e `src/estado/gemeo.ts`.
-
----
-
-## Páginas e navegação
-
-A interface tem três páginas, trocadas pela navegação no topo (estado no store,
-sem router); o mapa fica sempre montado ao fundo:
-
-1. **Operacional** — a sala de situação propriamente dita: mapa, KPIs, Saúde
-   da rede, Confiabilidade do sistema, resumo do enxame, Fila de alertas,
-   Rastreabilidade da decisão, Gêmeo digital (what-if de comportas), e os
-   botões flutuantes de Camadas e Mapa base.
-2. **Agentes & Fluxo** — os 12 agentes especialistas com a atividade atual em
-   linguagem natural, e o grafo do Fluxo do dado.
-3. **Alertas & Deliberações** — o histórico de alertas (operador, estado,
-   motivo, horários, boletim).
-
-**Terminologia:** por padrão a UI usa linguagem operacional em português; o
-toggle **Modo técnico** (menu de perfil) revela os códigos de requisito
-(`RF-…`) para público técnico.
-
----
-
-## Cenários
-
-| Cenário | O que demonstra |
-|---|---|
-| Céu limpo | Sistema em repouso, rede saudável |
-| Chuva convectiva localizada | Limiar observado e antifadiga (agrupamento) |
-| Evento extremo prolongado | Mancha crescendo, geofencing preditivo, lead time |
-| Falha na rede de estações | Detecção de estação silenciosa e degradação graciosa |
-| Leitura implausível | Controle de qualidade impedindo alerta a partir de dado sujo |
-
-Todos os cenários são **reproduzíveis**: mesma semente, mesmo resultado.
-
-No cenário "Leitura implausível" o KPI de leituras rejeitadas legitimamente
-mostra uma contagem maior que zero — isso é o agente de controle de qualidade
-barrando um dado sujo antes que ele vire alerta, não um erro da demo.
-
----
-
-## Honestidade deliberada sobre cada peça
-
-Estas três propriedades foram verificadas durante a construção e são a razão de
-a demo poder ser levada a um público técnico sem ressalvas escondidas:
-
-- **`agenteRedator` não é um LLM.** Ele compõe o boletim (`redigirBoletim` em
-  `src/dominio/boletim.ts`) a partir de um template preenchido com valores já
-  presentes no estado da simulação. Nenhum número pode aparecer no boletim que
-  não tenha sido lido de uma fonte da simulação. É uma propriedade de
-  honestidade deliberada, não um atalho por falta de chave de API.
-
-- **`preverNivel` não é um modelo hidrológico.** É uma curva de resposta
-  chuva-nível paramétrica (`src/dominio/previsao.ts`), suficiente para
-  demonstrar o fluxo previsão → mancha → alerta espacial. A chuva já caída
-  (`chuvaAcumulada6hMm`) só entra no incremento previsto uma vez — pelo motor
-  da simulação, que já usa essa mesma chuva para subir `nivelAtualM` a cada
-  tick. `preverNivel` soma só a chuva que ainda vai cair; o pico do cenário
-  extremo fica por volta de 5,5 m — acima do recorde histórico do Guaíba
-  (5,35 m, maio/2024) porque é um "evento extremo", mas um número de cota que
-  não soa absurdo a um hidrólogo, e continua sintético.
-
-- **RNF-18 é aplicado em código, não apenas representado na interface.**
-  `expedir()` (`src/dominio/alerta.ts`) lança exceção se o alerta não estiver
-  validado por um operador identificado. `validar()` não tem nenhum chamador
-  no código de produção fora da ação humana (`FilaAlertas.tsx` →
-  `motor.validarAlerta()`, disparado por clique). O agente de expedição fica
-  visivelmente bloqueado até uma pessoa validar. Testes cobrem isso em três
-  camadas: domínio (`describe("expedir")` em `dominio/alerta.test.ts`), agente
-  (`describe("agenteExpedicao — RNF-18")` em `agentes/agentesAlerta.test.ts`)
-  e motor ponta a ponta (`"nao expede alerta sem validacao humana — RNF-18
-  ponta a ponta"` em `simulacao/motor.test.ts`).
-
----
-
-## Divergências em relação ao escopo pleno
-
-Decisões deliberadas, para que o escopo caiba numa demonstração estática sem
-backend:
-
-| Item | Escopo pleno | Demonstração | Motivo |
-|---|---|---|---|
-| CRS | EPSG:4674 | EPSG:4326 | Geometria sintética; ArcGIS reprojeta na renderização |
-| Modelo hidrológico | Físico acoplado + ML | Curva de resposta paramétrica | Sem backend; suficiente para o fluxo |
-| Camada LLM | Provedor agnóstico | Template determinístico | Sem backend e sem chave de API |
-| Design system | Calcite (padrão Esri) | CSS próprio | Glassmorfismo brigaria com Calcite |
-| Persistência | Enterprise Data Store | Memória do navegador | Demo sem backend |
-
-Dois requisitos seguem sem implementação nesta demo:
-- `RF-EXP-01` (destinatários e matriz de expedição)
-- `RF-EXP-03` (retentativa com recuo exponencial)
-
-O agente de expedição publica um array fixo de canais, sem destinatários,
-matriz ou retentativa — cobre `RF-EXP-02`, não os outros dois.
-
----
-
-## Estrutura do código
-
-```
-src/dominio/      lógica pura, testável sem React/ArcGIS/rede
-src/simulacao/    mundo procedural, cenários, barramento, motor de tick
-src/agentes/      os 12 agentes especialistas
-src/estado/       ponte Zustand entre motor mutável e React (páginas, camadas, gêmeo)
-src/mapa/         ArcGIS Maps SDK: config, simbologia, camadas animadas, visibilidade
-src/ui/           painéis, páginas (ui/paginas/), navegação, textos, controles de mapa
+```text
+gov-sp-defesa-civil-sisgeo-pluvial/
+  package.json
+  package-lock.json
+  vercel.json
+  tsconfig.json
+  vite.config.ts
+  index.html
+  .env.example
+  .gitignore
+  dist/
+    assets/
+    index.html
+  src/
+    agentes/
+    dominio/
+    estado/
+    mapa/
+    simulacao/
+    styles/
+    ui/
+      paginas/
+  pics/
 ```
 
-Repositório inclui também:
+Papel de cada parte:
 
-```
-pics/             capturas de tela da demonstração
-```
+- `gov-sp-defesa-civil-sisgeo-pluvial/package.json` e `package-lock.json`: scripts, dependências e metadados do projeto.
+- `gov-sp-defesa-civil-sisgeo-pluvial/vercel.json`: configuração de deploy estático na Vercel (framework, build, rewrite de SPA, headers de segurança e branch de produção).
+- `gov-sp-defesa-civil-sisgeo-pluvial/tsconfig.json` e `vite.config.ts`: tipagem TypeScript e configuração do bundler Vite.
+- `gov-sp-defesa-civil-sisgeo-pluvial/index.html`: ponto de entrada do SPA.
+- `gov-sp-defesa-civil-sisgeo-pluvial/.env.example`: variáveis opcionais para o modo ArcGIS Enterprise (ver "Conectar ao ArcGIS Enterprise").
+- `gov-sp-defesa-civil-sisgeo-pluvial/dist/`: versão gerada para publicação após o build.
+- `gov-sp-defesa-civil-sisgeo-pluvial/src/`: código-fonte, organizado por responsabilidade — `dominio/` lógica pura, `simulacao/` mundo procedural e motor de tick, `agentes/` os doze agentes especialistas, `estado/` ponte Zustand entre motor e React, `mapa/` camada ArcGIS Maps SDK, `styles/` tokens e CSS e `ui/` páginas e painéis.
+- `gov-sp-defesa-civil-sisgeo-pluvial/pics/`: capturas de tela da demonstração usadas neste README.
 
-### Layout e limites de tela
+## Últimas atualizações
 
-A interface foi desenhada para uma tela de apresentação e foi medida em
-**1600 × 900**. Ela não é responsiva: em larguras estreitas a grade de colunas
-da página Operacional fica apertada. Para apresentar, prefira um monitor ou
-projetor próximo dessa resolução.
+- Doze agentes especialistas organizados em sete módulos (ING → NET → MOD → ALT → LLM → EXP → GOV), com atividade em linguagem natural visível na página Agentes & Fluxo.
+- Cinco cenários reprodutíveis com semente fixa (céu limpo, chuva convectiva localizada, evento extremo prolongado, falha na rede de estações e leitura implausível).
+- Validação humana obrigatória antes de qualquer expedição, garantida em código (RNF-18) e coberta por testes em três camadas (domínio, agente e motor ponta a ponta).
+- Painel "Confiabilidade do sistema" com NSE/RMSE/MAE/viés para o modelo hidrológico e POD/FAR/CSI para os gatilhos de alerta, calculados sobre as séries da própria simulação e rotulados como sintéticos.
+- Painel "Gêmeo digital" com modo what-if de comportas e EBAPs, recoloração dos ativos no mapa por estado e recálculo contínuo da população exposta por zona.
+- Botões flutuantes de camadas (mancha de inundação, zonas de risco, estações, equipes em campo, ativos de proteção, sub-bacias e corredor) e troca de basemap (OSM, Satélite, Topográfico) sobre o mapa.
+- Três páginas na navegação (Operacional, Agentes & Fluxo, Alertas & Deliberações) com o mapa ArcGIS sempre montado ao fundo.
+- Terminologia operacional em português por padrão; o toggle "Modo técnico" (menu de perfil) revela os códigos de requisito `RF-…` para público técnico.
+- Headers de segurança básicos (`X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`) habilitados no `vercel.json` para o deploy estático.
 
----
+## Como rodar localmente
 
-## Rodar localmente
+Requisitos:
+
+- Node.js 20.x ou superior
+- npm
+
+Passos:
 
 ```bash
 npm install
 npm run dev
 ```
 
-Ao rodar `npm run dev` pode aparecer no console um `Basemap AbortError`
-benigno. Ele vem do duplo-montagem deliberado do React `StrictMode` em
-desenvolvimento e não ocorre no build de produção.
+O servidor local do Vite exibirá a URL de acesso no terminal, normalmente `http://localhost:5173`.
 
-### Verificar antes de publicar
+Para gerar uma versão de produção:
+
+```bash
+npm run build
+```
+
+Para visualizar a versão gerada:
+
+```bash
+npm run preview
+```
+
+Para rodar os testes, a checagem de tipos e o build de uma vez antes de publicar:
 
 ```bash
 npm run verificar
 ```
 
-Roda testes, checagem de tipos e build.
+## Deploy
 
----
+O projeto já inclui `vercel.json` com a configuração de deploy para Vercel:
 
-## Publicar
+- Framework: Vite
+- Build: `npm run build`
+- Saída: `dist`
+- Rewrite de SPA: toda rota → `/index.html`
+- Headers de segurança: `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin` e `Permissions-Policy` restritiva (`camera`, `microphone`, `geolocation`, `interest-cohort` desligados)
+- `git.deploymentEnabled.main: true` — documenta `main` como branch de produção
 
-O projeto é estático, sem backend, e pode ser publicado em qualquer host
-estático (Vercel, Netlify, GitHub Pages, etc.). Para a Vercel:
+Deploy sugerido na Vercel:
 
-```bash
-npx vercel --prod
-```
+1. Em https://vercel.com/new, use *Import Git Repository* e selecione este repositório.
+2. Garanta Node.js 20.x ou superior no ambiente de build (compatível com `engines.node` em `package.json`).
+3. Mantenha o framework `vite` detectado automaticamente a partir do `vercel.json`.
+4. Mantenha o comando de build como `npm run build` e a saída como `dist`.
+5. Publique.
 
-Ou conecte o repositório na Vercel apontando o *root directory* para `demo/`.
-O `vercel.json` já define framework, comando de build e reescrita de SPA.
-**Nenhuma variável de ambiente é necessária para publicar.**
+A partir desse vínculo inicial, o GitHub App do Vercel instala um webhook no repositório e passa a disparar deploy automaticamente a cada push: `main` → deploy de produção; demais branches e PRs → deploy de preview, com a URL comentada no PR pelo próprio GitHub App.
 
-Após publicar, confirme na URL publicada:
-- o mapa carrega (com o basemap OpenStreetMap);
-- os cenários trocam pelo seletor;
-- o agente de expedição fica bloqueado enquanto o alerta é candidato;
-- a validação humana (clique em "Validar" na fila de alertas) destrava a
-  expedição e o agente passa a "trabalhando".
+Também é possível hospedar a pasta `dist` em qualquer serviço de arquivos estáticos depois do build.
 
----
+## Páginas da demonstração
+
+### Operacional
+
+Tela principal da simulação. Combina mapa operacional sobre a bacia sintética, cabeçalho com relógio simulado e cenário, KPIs centralizados (antecedência média, rede operante, aguardando validação, alertas expedidos, cota prevista, população nas zonas alcançadas e leituras reprovadas), botões flutuantes de camadas e basemap, painel de Saúde da rede, painel de Confiabilidade do sistema (métricas sintéticas rotuladas, com explicação do modelo e dos gatilhos medidos), resumo do enxame, Fila de alertas (onde a validação humana acontece), Rastreabilidade da decisão e Gêmeo digital com operação what-if de comportas e EBAPs.
+
+### Agentes & Fluxo
+
+Mostra os doze agentes especialistas organizados em sete módulos (ING, NET, MOD, ALT, LLM, EXP, GOV), cada um com descrição da atividade atual em linguagem natural — "Recebendo leituras de 19 estações operantes", "Projetando cota de 3,17 m para as próximas 12 h", "Validou as leituras; 0 reprovadas barradas", etc. — e o grafo visual do Fluxo do dado, da ingestão até a expedição multicanal e a trilha de auditoria. A página torna visível o bloqueio do agente de expedição enquanto o alerta aguarda validação humana (RNF-18).
+
+### Alertas & Deliberações
+
+Registra o histórico completo de alertas da operação: cada candidato gerado, qual zona foi alvo, severidade estimada, estado final (validado e expedido, descartado, ou aguardando), operador que decidiu, motivo da decisão, horários e o boletim gerado pelo agente redator. Serve para demonstrar rastreabilidade, prestação de contas e revisão posterior.
+
+## Cenários abordados
+
+- **Céu limpo** — sistema em repouso, rede saudável, nenhum alerta gerado; estado operacional de referência para falar de monitoramento 24/7.
+- **Chuva convectiva localizada** — limiar observado dispara; o agente antifadiga agrupa a reincidência na mesma célula em vez de criar alerta novo, protegendo o plantão de ruído.
+- **Evento extremo prolongado** — cota sobe, mancha de inundação cresce em direção às zonas de risco, geofencing preditivo antecipa o alerta com lead time, e a validação humana libera a expedição com o boletim gerado pelo redator.
+- **Falha na rede de estações** — estações silenciam durante o evento; o painel de Saúde da rede expõe a lacuna, o KPI de rede operante cai e o sistema degrada graciosamente com o que resta.
+- **Leitura implausível** — um sensor envia leitura absurda (ex.: 2000 mm/h); o agente de qualidade reprova, mantém o registro para auditoria e impede que o dado sujo vire alerta.
+
+Todos os cenários usam a mesma semente de aleatoriedade e são **reprodutíveis**: mesmo cenário + play do zero → mesmo resultado em cada execução, viabilizando ensaio da apresentação.
 
 ## Conectar ao ArcGIS Enterprise
 
-A demo funciona integralmente **sem** credencial. Para apontar para o portal
-`https://saopaulo.img.com.br/portal`:
+A demonstração funciona integralmente **sem** credencial. Para apontar para um portal ArcGIS Enterprise real, preencha o `.env` (ou as variáveis no host de publicação):
 
-1. Registre a aplicação no portal (*Content > New item > Application > Other
-   application*) e anote o **App ID (Client ID)**. Em *Settings > Redirect URIs*
-   adicione `http://localhost:5173` (dev) e a URL de produção.
-2. Preencha o `.env` (ou as variáveis no host de publicação):
-   ```
-   VITE_ARCGIS_PORTAL_URL=https://saopaulo.img.com.br/portal
-   VITE_ARCGIS_APP_ID=<App ID registrado>
-   VITE_MODO_ENTERPRISE=true
-   ```
-   `modoEnterprise()` só liga com **flag E App ID** presentes (ver
-   `src/mapa/config.ts`), evitando que um deploy com a flag ligada e sem
-   credencial quebre a apresentação.
-3. Troque os mocks de `src/simulacao/mundo.ts` por `FeatureLayer` do portal e,
-   se desejar, substitua o basemap OSM por um webmap do portal em
-   `src/mapa/MapaSalaSituacao.tsx` (`Basemap({ portalItem: { id: … } })`).
+```
+VITE_ARCGIS_PORTAL_URL=https://portal.exemplo.gov.br/portal
+VITE_ARCGIS_APP_ID=<App ID registrado no portal>
+VITE_MODO_ENTERPRISE=true
+VITE_ARCGIS_BASEMAP_ID=<id de webmap do portal, opcional>
+```
 
-> O contrato de dados esperado está nas interfaces de `src/dominio/tipos.ts`.
-> Mapeie os campos do serviço real em um adaptador — **não altere os tipos do
-> domínio para caber no serviço**, porque isso propagaria o formato do serviço
-> por toda a aplicação. O domínio, os agentes, o motor e os testes não dependem
-> de ArcGIS nem de rede: conectar ao Enterprise é uma troca na borda de dados
-> e na borda de renderização.
+Passos no portal:
 
----
+1. *Content > New item > Application > Other application* — registre a aplicação e anote o **App ID (Client ID)**.
+2. Em *Settings > Redirect URIs*, cadastre `http://localhost:5173` (desenvolvimento) e a URL de produção. Sem isso, o fluxo OAuth falha silenciosamente no navegador.
+3. Para consumir camadas do portal, troque os mocks de `src/simulacao/mundo.ts` por `FeatureLayer` apontando para seus serviços publicados. Para o basemap, substitua `Basemap.fromId("osm")` em `src/mapa/MapaSalaSituacao.tsx` por `new Basemap({ portalItem: { id: … } })`.
 
-## Licenças de terceiros
+> `modoEnterprise()` só liga com **flag e App ID** presentes (ver `src/mapa/config.ts`), evitando que um deploy com a flag ligada e sem credencial quebre a apresentação. O contrato de dados esperado está nas interfaces de `src/dominio/tipos.ts` — mapeie os campos do serviço real em um adaptador, **não altere os tipos do domínio para caber no serviço**, porque isso propagaria o formato do serviço por toda a aplicação.
 
-- `@xyflow/react` (React Flow) — MIT, uso livre inclusive comercial.
-- `@arcgis/core` — segue os termos da Esri; o basemap padrão é OpenStreetMap,
-  que não exige chave de API.
+## Dados e limites
+
+Esta demonstração usa dados sintéticos, resultados simulados e geometria de bacia gerada proceduralmente. Ela não deve ser usada para alerta real à população, decisão de evacuação, análise hidrológica oficial, validação meteorológica, certificação institucional ou conclusão técnica sobre eventos existentes. Três propriedades foram verificadas durante a construção e explicam por que a demonstração pode ser levada a um público técnico sem ressalvas escondidas:
+
+- **O rascunho do boletim não é escrito por LLM.** O agente redator (`src/dominio/boletim.ts`) compõe o texto a partir de um template preenchido com valores já presentes no estado da simulação. Nenhum número aparece no boletim que não tenha sido lido de uma fonte da simulação — é honestidade deliberada, não um atalho por falta de chave de API.
+- **A previsão de nível não é um modelo hidrológico.** É uma curva de resposta chuva-nível paramétrica (`src/dominio/previsao.ts`), suficiente para demonstrar o fluxo previsão → mancha → alerta espacial, mas que não substitui um modelo físico acoplado nem um modelo de aprendizado de máquina treinado em séries reais.
+- **A validação humana obrigatória (RNF-18) é aplicada em código.** `expedir()` (`src/dominio/alerta.ts`) lança exceção se o alerta não estiver validado por um operador identificado; nenhuma expedição automática existe no código de produção. Testes cobrem isso em três camadas: domínio, agente e motor ponta a ponta.
+
+A ferramenta serve como material de demonstração e conversa sobre desenho de produto, arquitetura de IA aplicada a defesa civil, alerta precoce espacializado, gêmeo digital de bacia, governança da decisão e integração com ArcGIS Enterprise.
