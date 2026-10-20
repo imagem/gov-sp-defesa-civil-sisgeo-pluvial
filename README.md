@@ -23,7 +23,6 @@ Demonstração web interativa de uma **sala de situação multi-agente** para
 - [Rodar localmente](#rodar-localmente)
 - [Publicar](#publicar)
 - [Conectar ao ArcGIS Enterprise](#conectar-ao-arcgis-enterprise)
-- [Documentação complementar](#documentação-complementar)
 - [Licenças de terceiros](#licenças-de-terceiros)
 
 ---
@@ -126,9 +125,6 @@ No cenário "Leitura implausível" o KPI de leituras rejeitadas legitimamente
 mostra uma contagem maior que zero — isso é o agente de controle de qualidade
 barrando um dado sujo antes que ele vire alerta, não um erro da demo.
 
-Roteiro de apresentação, perguntas prováveis e respostas estão em
-[`docs/GUIA-DEMONSTRACAO.md`](docs/GUIA-DEMONSTRACAO.md).
-
 ---
 
 ## Honestidade deliberada sobre cada peça
@@ -201,8 +197,6 @@ src/ui/           painéis, páginas (ui/paginas/), navegação, textos, control
 Repositório inclui também:
 
 ```
-docs/             documentação funcional (guia, roadmap, conexão Enterprise)
-fv/               documentos de fundamentação da hipótese de valor
 pics/             capturas de tela da demonstração
 ```
 
@@ -260,22 +254,31 @@ Após publicar, confirme na URL publicada:
 
 ## Conectar ao ArcGIS Enterprise
 
-Ver [`docs/CONEXAO-ENTERPRISE.md`](docs/CONEXAO-ENTERPRISE.md) para o passo a
-passo de troca dos mocks por camadas reais do portal de São Paulo (OAuth,
-`FeatureLayer`, basemap do portal).
+A demo funciona integralmente **sem** credencial. Para apontar para o portal
+`https://saopaulo.img.com.br/portal`:
 
----
+1. Registre a aplicação no portal (*Content > New item > Application > Other
+   application*) e anote o **App ID (Client ID)**. Em *Settings > Redirect URIs*
+   adicione `http://localhost:5173` (dev) e a URL de produção.
+2. Preencha o `.env` (ou as variáveis no host de publicação):
+   ```
+   VITE_ARCGIS_PORTAL_URL=https://saopaulo.img.com.br/portal
+   VITE_ARCGIS_APP_ID=<App ID registrado>
+   VITE_MODO_ENTERPRISE=true
+   ```
+   `modoEnterprise()` só liga com **flag E App ID** presentes (ver
+   `src/mapa/config.ts`), evitando que um deploy com a flag ligada e sem
+   credencial quebre a apresentação.
+3. Troque os mocks de `src/simulacao/mundo.ts` por `FeatureLayer` do portal e,
+   se desejar, substitua o basemap OSM por um webmap do portal em
+   `src/mapa/MapaSalaSituacao.tsx` (`Basemap({ portalItem: { id: … } })`).
 
-## Documentação complementar
-
-- [`docs/GUIA-DEMONSTRACAO.md`](docs/GUIA-DEMONSTRACAO.md) — roteiro
-  operacional para apresentar a demo (cenários, falas, perguntas prováveis,
-  checklist pré-apresentação).
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) — estudos de evolução para aproximar
-  a demo do escopo pleno (MCP + ArcGIS Enterprise, gêmeo digital semântico,
-  conexão a fonte pública real, métricas de desempenho).
-- [`docs/CONEXAO-ENTERPRISE.md`](docs/CONEXAO-ENTERPRISE.md) — configuração
-  OAuth e troca dos mocks por `FeatureLayer` do portal.
+> O contrato de dados esperado está nas interfaces de `src/dominio/tipos.ts`.
+> Mapeie os campos do serviço real em um adaptador — **não altere os tipos do
+> domínio para caber no serviço**, porque isso propagaria o formato do serviço
+> por toda a aplicação. O domínio, os agentes, o motor e os testes não dependem
+> de ArcGIS nem de rede: conectar ao Enterprise é uma troca na borda de dados
+> e na borda de renderização.
 
 ---
 
