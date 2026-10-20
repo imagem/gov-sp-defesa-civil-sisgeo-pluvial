@@ -1,0 +1,166 @@
+:root {
+  color-scheme: dark;
+
+  --cor-fundo: #070b14;
+  --cor-fundo-alt: #0c1322;
+  --cor-texto: #e8eef7;
+  --cor-texto-fraco: #92a3bb;
+  --cor-borda: rgba(255, 255, 255, 0.12);
+
+  --cor-acento: #38bdf8;
+  --cor-ok: #34d399;
+  --cor-atencao: #fbbf24;
+  --cor-alta: #fb923c;
+  --cor-critica: #f43f5e;
+
+  --sev-baixa: #38bdf8;
+  --sev-media: #fbbf24;
+  --sev-alta: #fb923c;
+  --sev-muito-alta: #f43f5e;
+
+  --raio: 14px;
+  --espaco-1: 4px;
+  --espaco-2: 8px;
+  --espaco-3: 12px;
+  --espaco-4: 16px;
+  --espaco-5: 24px;
+
+  --fonte: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --fonte-mono: ui-monospace, "SF Mono", "Cascadia Code", monospace;
+
+  /*
+   * Identidade institucional (auditada em defesacivil.sp.gov.br): a marca da
+   * Coordenadoria Estadual de Protecao e Defesa Civil e um logotipo
+   * tipografico, sem simbolo pictorico proprio, sobre o azul padrao gov.br.
+   */
+  --cor-institucional: #5aa6ff;
+  --cor-institucional-fraca: #9ec7ff;
+
+  /*
+   * Material de vidro (glassmorfismo) — tema escuro e o padrao.
+   * As superficies .vidro ficam sobre o mapa: a opacidade e deliberadamente
+   * baixa para o operador seguir enxergando a geografia por baixo dos
+   * paineis. .vidro-forte (cabecalho, popovers, modal) segue mais opaco,
+   * porque ali a leitura de texto denso vem antes da transparencia.
+   */
+  --vidro-fundo-1: rgba(15, 23, 40, 0.74);
+  --vidro-fundo-2: rgba(9, 14, 25, 0.66);
+  --vidro-forte-fundo-1: rgba(12, 19, 34, 0.86);
+  --vidro-forte-fundo-2: rgba(7, 11, 20, 0.76);
+  --vidro-sombra: rgba(0, 0, 0, 0.38);
+  --vidro-forte-sombra: rgba(0, 0, 0, 0.5);
+  --vidro-realce: rgba(255, 255, 255, 0.14);
+  --vidro-fallback: rgba(9, 14, 25, 0.9);
+
+  /* Sobreposicoes neutras usadas em fundos de linha, divisores e hovers. */
+  --superficie-fraca: rgba(255, 255, 255, 0.04);
+  --superficie-media: rgba(255, 255, 255, 0.07);
+  --superficie-forte: rgba(255, 255, 255, 0.14);
+  --divisor-fraco: rgba(255, 255, 255, 0.05);
+
+  /* Superficie OPACA: barra de navegacao e controles do mapa, que precisam
+     de contraste constante contra qualquer basemap por baixo. */
+  --superficie-opaca: #121a2b;
+  --superficie-opaca-hover: #1b2740;
+
+  --botao-fundo: rgba(255, 255, 255, 0.07);
+  --botao-fundo-hover: rgba(255, 255, 255, 0.14);
+  --botao-primario-fundo: rgba(56, 189, 248, 0.22);
+  --botao-primario-fundo-hover: rgba(56, 189, 248, 0.34);
+  --botao-primario-borda: rgba(56, 189, 248, 0.55);
+  --botao-perigo-fundo: rgba(244, 63, 94, 0.18);
+  --botao-perigo-fundo-hover: rgba(244, 63, 94, 0.3);
+  --botao-perigo-borda: rgba(244, 63, 94, 0.5);
+
+  --selo-fundo: rgba(251, 191, 36, 0.16);
+  --selo-borda: rgba(251, 191, 36, 0.45);
+  --selo-texto: #fde68a;
+
+  /* Escurece o fundo por baixo de modais — propositalmente igual nos dois temas. */
+  --modal-scrim: rgba(3, 6, 12, 0.66);
+  --campo-fundo: rgba(0, 0, 0, 0.34);
+
+  /*
+   * Neutros do canvas do grafo (Fluxo do dado): valores identicos aos que
+   * eram literais hardcoded, preservados aqui como padrao do tema escuro
+   * para manter o canvas pixel-identico ao que o dono do projeto ja
+   * aprovou. So o tema claro (que nao existia quando essa restricao foi
+   * definida) recebe um valor diferente, abaixo.
+   */
+  --grafo-linha-inativa: rgba(255, 255, 255, 0.14);
+  --grafo-fundo-pontilhado: rgba(255, 255, 255, 0.07);
+  --grafo-borda-ociosa: rgba(255, 255, 255, 0.16);
+}
+
+/*
+ * Tema claro: so troca fundo, texto, borda e material de vidro/botoes.
+ * As cores de dominio (--cor-acento/ok/atencao/alta/critica e --sev-*) NAO
+ * mudam — sao a simbologia do mapa, da severidade e do status dos agentes,
+ * e precisam significar a mesma coisa nos dois temas.
+ */
+:root[data-tema="claro"] {
+  color-scheme: light;
+
+  --cor-fundo: #fafaed;
+  --cor-fundo-alt: #ffffff;
+  --cor-texto: #101725;
+  --cor-texto-fraco: #55627a;
+  --cor-borda: rgba(16, 23, 37, 0.14);
+
+  /* Azul padrao gov.br, usado pelo portal da Defesa Civil de Sao Paulo. */
+  --cor-institucional: #1351b4;
+  --cor-institucional-fraca: #41566f;
+
+  --superficie-opaca: #fffff6;
+  --superficie-opaca-hover: #f1f1e0;
+
+  /* Vidro creme: deriva de --cor-fundo (#FAFAED) para nao esverdear o mapa. */
+  --vidro-fundo-1: rgba(250, 250, 237, 0.76);
+  --vidro-fundo-2: rgba(244, 244, 228, 0.68);
+  --vidro-forte-fundo-1: rgba(252, 252, 243, 0.92);
+  --vidro-forte-fundo-2: rgba(243, 243, 226, 0.86);
+  --vidro-sombra: rgba(16, 23, 37, 0.12);
+  --vidro-forte-sombra: rgba(16, 23, 37, 0.16);
+  --vidro-realce: rgba(255, 255, 255, 0.7);
+  --vidro-fallback: rgba(250, 250, 237, 0.94);
+
+  --superficie-fraca: rgba(16, 23, 37, 0.035);
+  --superficie-media: rgba(16, 23, 37, 0.06);
+  --superficie-forte: rgba(16, 23, 37, 0.1);
+  --divisor-fraco: rgba(16, 23, 37, 0.08);
+
+  --botao-fundo: rgba(16, 23, 37, 0.05);
+  --botao-fundo-hover: rgba(16, 23, 37, 0.1);
+  --botao-primario-fundo: rgba(14, 165, 233, 0.14);
+  --botao-primario-fundo-hover: rgba(14, 165, 233, 0.22);
+  --botao-primario-borda: rgba(14, 165, 233, 0.5);
+  --botao-perigo-fundo: rgba(225, 29, 72, 0.12);
+  --botao-perigo-fundo-hover: rgba(225, 29, 72, 0.2);
+  --botao-perigo-borda: rgba(225, 29, 72, 0.45);
+
+  --selo-fundo: rgba(217, 119, 6, 0.14);
+  --selo-borda: rgba(217, 119, 6, 0.4);
+  --selo-texto: #92400e;
+
+  --campo-fundo: rgba(16, 23, 37, 0.05);
+
+  /* Neutros do canvas do grafo, legiveis sobre o vidro claro. */
+  --grafo-linha-inativa: rgba(16, 23, 37, 0.18);
+  --grafo-fundo-pontilhado: rgba(16, 23, 37, 0.08);
+  --grafo-borda-ociosa: rgba(16, 23, 37, 0.2);
+}
+
+* { box-sizing: border-box; }
+
+html, body, #raiz {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font-family: var(--fonte);
+  font-size: 14px;
+  overflow: hidden;
+}

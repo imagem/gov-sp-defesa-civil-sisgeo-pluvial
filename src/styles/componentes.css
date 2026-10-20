@@ -1,0 +1,293 @@
+/*
+ * Escala de z-index (do fundo para o topo):
+ * mapa < paineis < cabecalho < popovers do cabecalho < modal.
+ * O <header> e as superficies .vidro criam contextos de empilhamento proprios
+ * (backdrop-filter), entao o cabecalho precisa de z-index proprio acima dos
+ * paineis — senao os popovers ficam presos atras de paineis posteriores no DOM.
+ */
+:root {
+  --z-mapa: 0;
+  --z-paineis: 10;
+  --z-cabecalho: 40;
+  --z-popover-cabecalho: 50;
+  --z-modal: 100;
+}
+
+.cabecalho {
+  position: relative;
+  z-index: var(--z-cabecalho);
+}
+
+.cabecalho-icone {
+  width: 16px;
+  height: 16px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Cabecalho do painel colapsavel: titulo + botoes de info/colapsar. */
+.painel-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  box-sizing: border-box;
+  height: 36px;
+  flex-shrink: 0;
+  margin-bottom: var(--espaco-3);
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.painel-cabecalho .titulo-painel {
+  margin: 0;
+  line-height: 1;
+}
+
+/* Botoes de info/colapsar: alinhados a direita, centrados na barra. */
+.painel-cabecalho-acoes {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
+.botao-icone {
+  appearance: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid var(--cor-borda);
+  background: var(--superficie-media);
+  color: var(--cor-texto-fraco);
+  font-size: 11px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.botao-icone:hover { background: var(--superficie-forte); }
+.botao-icone:focus-visible { outline: 2px solid var(--cor-acento); outline-offset: 2px; }
+
+.painel-popover-info {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  width: 260px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--vidro-forte-fundo-1);
+  border: 1px dashed var(--cor-borda);
+  box-shadow: 0 12px 32px var(--vidro-forte-sombra);
+  font-size: 11.5px;
+  color: var(--cor-texto-fraco);
+  line-height: 1.5;
+}
+
+.painel-resumo {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-height: 44px;
+  flex-wrap: wrap;
+}
+
+.titulo-resumo {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cor-texto);
+  white-space: nowrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--superficie-media);
+  border: 1px solid var(--cor-borda);
+  color: var(--cor-texto-fraco);
+  white-space: nowrap;
+}
+.chip b { color: var(--cor-texto); font-weight: 600; }
+
+.chip-ponto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+/* Barra superior */
+.cabecalho-separador {
+  width: 1px;
+  align-self: stretch;
+  background: var(--cor-borda);
+  margin: 4px 2px;
+}
+
+.cabecalho-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 9px;
+  border: 1px solid var(--cor-borda);
+  background: var(--superficie-media);
+  font-size: 12.5px;
+  color: var(--cor-texto);
+  cursor: pointer;
+  white-space: nowrap;
+  appearance: none;
+  font: inherit;
+}
+.cabecalho-pill:hover { background: var(--superficie-forte); }
+
+.cabecalho-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--cor-acento), #0ea5e9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #04121c;
+  flex-shrink: 0;
+}
+
+.cabecalho-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--selo-fundo);
+  border: 1px solid var(--selo-borda);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--selo-texto);
+  white-space: nowrap;
+}
+
+.cabecalho-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cor-critica);
+  border: 2px solid var(--cor-fundo-alt);
+}
+
+.cabecalho-popover {
+  position: absolute;
+  top: 42px;
+  right: 0;
+  z-index: var(--z-popover-cabecalho);
+  width: 280px;
+  max-height: 320px;
+  overflow: auto;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--vidro-forte-fundo-1);
+  border: 1px solid var(--cor-borda);
+  box-shadow: 0 16px 40px var(--vidro-forte-sombra);
+}
+
+/* Controles do React Flow (zoom/lock) no tema escuro: o estilo padrao da
+   biblioteca e claro (botao branco, icone branco herdado). Especificidade
+   maior que a do style.css do @xyflow, que e carregado antes deste arquivo. */
+:root:not([data-tema="claro"]) .react-flow .react-flow__controls {
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px var(--vidro-forte-sombra);
+}
+
+:root:not([data-tema="claro"]) .react-flow .react-flow__controls-button {
+  background: var(--vidro-forte-fundo-1);
+  color: var(--cor-texto);
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+:root:not([data-tema="claro"]) .react-flow .react-flow__controls-button:hover {
+  background: var(--superficie-forte);
+  color: var(--cor-texto);
+}
+
+:root:not([data-tema="claro"]) .react-flow .react-flow__controls-button:last-child {
+  border-bottom: none;
+}
+
+:root:not([data-tema="claro"]) .react-flow .react-flow__controls-button svg {
+  fill: var(--cor-texto);
+}
+
+/* Controles de camadas e mapa base, na barra de navegacao. */
+.controles-mapa {
+  position: relative;
+  width: max-content;
+  max-width: 100%;
+}
+
+.controles-mapa-botoes {
+  display: flex;
+  gap: var(--espaco-2);
+}
+
+.controle-mapa-botao {
+  pointer-events: auto;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.controles-mapa-painel {
+  pointer-events: auto;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: var(--z-popover-cabecalho);
+  width: 220px;
+  max-width: calc(100vw - 32px);
+  padding: 10px 12px;
+}
+
+.controles-mapa-titulo {
+  margin: 0 0 6px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cor-texto-fraco);
+}
+
+.controles-mapa-opcao {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--cor-texto);
+}
+
+.controles-mapa-opcao input { accent-color: var(--cor-acento); cursor: pointer; }
