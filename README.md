@@ -25,7 +25,7 @@ A Sala de Situação — Alerta Precoce de Cheias é uma demonstração interati
 
 ## Estrutura regularizada
 
-Estrutura mínima para publicação na Vercel com o build do Vite:
+Estrutura mínima do repositório (apenas o que é versionado):
 
 ```text
 gov-sp-defesa-civil-sisgeo-pluvial/
@@ -37,9 +37,6 @@ gov-sp-defesa-civil-sisgeo-pluvial/
   index.html
   .env.example
   .gitignore
-  dist/
-    assets/
-    index.html
   src/
     agentes/
     dominio/
@@ -59,9 +56,10 @@ Papel de cada parte:
 - `gov-sp-defesa-civil-sisgeo-pluvial/tsconfig.json` e `vite.config.ts`: tipagem TypeScript e configuração do bundler Vite.
 - `gov-sp-defesa-civil-sisgeo-pluvial/index.html`: ponto de entrada do SPA.
 - `gov-sp-defesa-civil-sisgeo-pluvial/.env.example`: variáveis opcionais para o modo ArcGIS Enterprise (ver "Conectar ao ArcGIS Enterprise").
-- `gov-sp-defesa-civil-sisgeo-pluvial/dist/`: versão gerada para publicação após o build.
 - `gov-sp-defesa-civil-sisgeo-pluvial/src/`: código-fonte, organizado por responsabilidade — `dominio/` lógica pura, `simulacao/` mundo procedural e motor de tick, `agentes/` os doze agentes especialistas, `estado/` ponte Zustand entre motor e React, `mapa/` camada ArcGIS Maps SDK, `styles/` tokens e CSS e `ui/` páginas e painéis.
 - `gov-sp-defesa-civil-sisgeo-pluvial/pics/`: capturas de tela da demonstração usadas neste README.
+
+> `dist/` **não faz parte do repositório** — é a pasta gerada localmente ou pelo Vercel ao rodar `npm run build` (listada em `.gitignore`). O deploy produz o `dist/` no ambiente de build e serve a pasta como artefato estático; não é necessário comitá-la.
 
 ## Últimas atualizações
 
