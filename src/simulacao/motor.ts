@@ -10,8 +10,11 @@ import {
   avancarDespacho,
   criarDespacho,
   escolherEspecialista,
+  estimarDeslocamentoMin,
   minutosRestantes,
+  substituirRota,
 } from "@/dominio/despacho";
+import type { Coordenada } from "@/dominio/geometria";
 import { resolverPrevisoes } from "@/dominio/desempenho";
 import { exposicaoPorMancha, mancharPorCota } from "@/dominio/mancha";
 import { criarAleatorio, type Aleatorio } from "@/dominio/prng";
@@ -55,7 +58,7 @@ export class Motor {
 
   constructor(cenario: Cenario) {
     this.cenario = cenario;
-    this.mundo = criarMundo(cenario.semente);
+    this.mundo = criarMundo(cenario.semente, cenario.regiao);
     this.rede = construirRedeInfluencia(this.mundo.zonas, this.mundo.ativos);
     this.relogio = new RelogioSimulado(new Date(cenario.inicioIso));
     this.aleatorio = criarAleatorio(cenario.semente);
@@ -327,6 +330,33 @@ export class Motor {
         });
       }
     }
+  }
+
+  /**
+   * Troca a geometria da rota de um despacho (ex.: resposta assincrona de um
+   * servico de rota real). So aceita quando o despacho ainda esta em
+   * `preparando` — depois disso a viatura ja saiu, e substituir a rota faria
+   * a animacao teleportar.
+   *
+   * Alem da geometria, recalcula o `deslocamentoMin` pela nova rota (uma rota
+   * de ruas reais costuma ser mais longa que a rota em L semeada, e manter o
+   * tempo faria a viatura aparentar velocidade de helicoptero). Como o
+   * despacho ainda esta em `preparando`, o cronometro do operador nao foi
+   * iniciado — a troca e segura.
+   *
+   * Devolve true se trocou, false se ignorou.
+   */
+  atualizarRotaDespacho(despachoId: string, pontos: readonly Coordenada[]): boolean {
+    const indice = this.estado.despachos.findIndex((d) => d.despachoId === despachoId);
+    const despacho = this.estado.despachos[indice];
+    if (!despacho) return false;
+    if (despacho.estado !== "preparando") return false;
+    const comRota = substituirRota(despacho, pontos);
+    this.estado.despachos[indice] = {
+      ...comRota,
+      deslocamentoMin: estimarDeslocamentoMin(comRota.rota),
+    };
+    return true;
   }
 
   /** Acao humana: valida um alerta candidato. Sem isso nada e expedido. */

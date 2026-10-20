@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import MapaSalaSituacao from "@/mapa/MapaSalaSituacao";
 import Cabecalho from "@/ui/Cabecalho";
 import ModalBoletim from "@/ui/ModalBoletim";
+import DossieAlerta from "@/ui/DossieAlerta";
 import Navegacao from "@/ui/Navegacao";
 import PaginaAgentes from "@/ui/paginas/PaginaAgentes";
 import PaginaAlertas from "@/ui/paginas/PaginaAlertas";
@@ -81,6 +82,7 @@ export default function App() {
       </div>
 
       <ModalBoletim />
+      <DossieAlerta />
     </div>
   );
 }

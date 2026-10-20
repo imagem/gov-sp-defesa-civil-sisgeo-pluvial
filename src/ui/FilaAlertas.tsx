@@ -13,6 +13,7 @@ function CartaoAlerta({ alerta }: { alerta: Alerta }) {
   const validarAlerta = useSimulacao((s) => s.validarAlerta);
   const descartarAlerta = useSimulacao((s) => s.descartarAlerta);
   const abrirBoletim = useSimulacao((s) => s.abrirBoletim);
+  const abrirDossie = useSimulacao((s) => s.abrirDossieAlerta);
   const [motivo, setMotivo] = useState("");
   const [erro, setErro] = useState<string | null>(null);
 
@@ -95,6 +96,13 @@ function CartaoAlerta({ alerta }: { alerta: Alerta }) {
       {aguardando ? (
         <div style={{ marginTop: "var(--espaco-3)", display: "grid", gap: 6 }}>
           <button
+            className="botao"
+            onClick={() => abrirDossie(alerta.alertaId)}
+            aria-label="Abrir dossiê do alerta — expectativa, camadas envolvidas, projeção, evidências e ações recomendadas"
+          >
+            Abrir dossiê do alerta
+          </button>
+          <button
             className="botao botao-primario"
             onClick={() => validarAlerta(alerta.alertaId)}
           >
@@ -116,7 +124,15 @@ function CartaoAlerta({ alerta }: { alerta: Alerta }) {
             <div style={{ fontSize: 10, color: "var(--cor-critica)" }}>{erro}</div>
           ) : null}
         </div>
-      ) : null}
+      ) : (
+        <button
+          className="botao"
+          style={{ marginTop: 8, width: "100%" }}
+          onClick={() => abrirDossie(alerta.alertaId)}
+        >
+          Abrir dossiê do alerta
+        </button>
+      )}
 
       {boletim ? (
         <button

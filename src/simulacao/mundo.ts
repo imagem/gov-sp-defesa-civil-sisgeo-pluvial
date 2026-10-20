@@ -15,22 +15,13 @@ import type {
   SubBacia,
   ZonaRisco,
 } from "@/dominio/tipos";
+import type { Regiao } from "./regioes";
 
 export const FONTES = ["CEMADEN", "ANA", "INMET"] as const;
 
-/** Centro sintetico proximo a Porto Alegre. Nao representa geometria real. */
-const CENTRO_PADRAO: Coordenada = [-51.22, -30.03];
-
-const NOMES_SUBBACIA = ["Alto Taquari", "Médio Antas", "Baixo Caí", "Arroio Dilúvio"] as const;
-
-const BAIRROS = [
-  "Partenon", "Glória", "Sarandi", "Restinga", "Lomba do Pinheiro",
-  "Cristal", "Navegantes", "Humaitá", "Rubem Berta", "Bom Jesus",
-  "Cavalhada", "Belém Novo", "Ipanema", "Tristeza",
-] as const;
-
 export interface Mundo {
   readonly semente: number;
+  readonly regiao: Regiao;
   readonly centro: Coordenada;
   readonly subBacias: SubBacia[];
   readonly corredor: Poligono;
@@ -59,15 +50,28 @@ function pontoDentroDe(geometria: Poligono, r: Aleatorio): Coordenada {
 }
 
 /**
- * Gera um mundo sintetico completo e reproduzivel a partir de uma semente.
- * Toda a geometria e procedural e irregular — nao ha shapefile embutido.
+ * Gera um mundo sintetico completo e reproduzivel a partir de uma semente e
+ * de uma regiao (centro, nomes de sub-bacias, carteira de bairros, prefixo
+ * do codigo setorial, posto fluviometrico). Toda a geometria segue
+ * procedural e irregular — a regiao so define o palco, nao substitui
+ * shapefiles reais.
  */
-export function criarMundo(semente: number): Mundo {
+export function criarMundo(semente: number, regiao: Regiao): Mundo {
   const r = criarAleatorio(semente);
-  const centro = CENTRO_PADRAO;
+  const centro = regiao.centro;
+  const nomesSubBacia = regiao.subBacias;
+  const bairros = regiao.bairros;
 
-  const subBacias: SubBacia[] = NOMES_SUBBACIA.map((nome, i) => {
-    const angulo = (i / NOMES_SUBBACIA.length) * Math.PI * 2;
+  const setor = regiao.setorAngularRad;
+  const subBacias: SubBacia[] = nomesSubBacia.map((nome, i) => {
+    // Sem setor explicito: anel completo com angulos 0, 2pi/N, 4pi/N, ... (compat
+    // com o comportamento original). Com setor [a, b]: angulos uniformemente
+    // espacados DENTRO do arco, centrados em cada fatia para nao esbarrarem
+    // nas pontas — assim uma regiao costeira pode excluir o oceano a sul sem
+    // concentrar bacias nas bordas do arco.
+    const angulo = setor
+      ? setor[0] + ((i + 0.5) / nomesSubBacia.length) * (setor[1] - setor[0])
+      : (i / nomesSubBacia.length) * Math.PI * 2;
     const centroSub: Coordenada = [
       centro[0] + Math.cos(angulo) * 0.09,
       centro[1] + Math.sin(angulo) * 0.09,
@@ -96,11 +100,14 @@ export function criarMundo(semente: number): Mundo {
     const populacao = inteiroEntre(r, 400, 5200);
     zonas.push({
       zonaId: `Z-${String(i + 1).padStart(2, "0")}`,
-      nome: BAIRROS[i % BAIRROS.length] ?? `Setor ${i + 1}`,
-      codigoSetorSgb: `SGB-RS-${4300 + i}`,
+      nome: bairros[i % bairros.length] ?? `Setor ${i + 1}`,
+      codigoSetorSgb: `${regiao.prefixoSgb}-${regiao.baseSetor + i}`,
       subBaciaId: subBacia.subBaciaId,
       grauRisco: r() > 0.55 ? "muito_alto" : "alto",
-      tipo: r() > 0.25 ? "inundacao" : "deslizamento",
+      // Tipo da zona varia com a vocacao da regiao: regioes de encosta
+      // (Serra do Mar) tem predominancia de deslizamento; bacias ribeirinhas
+      // (Varzea do Tiete, Guaiba) tem predominancia de inundacao.
+      tipo: r() < (regiao.pesoDeslizamento ?? 0.25) ? "deslizamento" : "inundacao",
       familiasEstimadas: Math.round(populacao / 3.2),
       populacaoEstimada: populacao,
       geometria: multiPoligonoIrregular(posicao, entre(r, 0.008, 0.018), lobos, r),
@@ -187,6 +194,7 @@ export function criarMundo(semente: number): Mundo {
 
   return {
     semente,
+    regiao,
     centro,
     subBacias,
     corredor,
@@ -195,6 +203,6 @@ export function criarMundo(semente: number): Mundo {
     ativos,
     limiares,
     cotaBaseM,
-    postoId: "P-GUAIBA-01",
+    postoId: regiao.postoId,
   };
 }

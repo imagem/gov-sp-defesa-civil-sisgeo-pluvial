@@ -4,6 +4,7 @@ import { criarAleatorio } from "@/dominio/prng";
 import { RelogioSimulado } from "@/dominio/relogio";
 import { Barramento } from "@/simulacao/barramento";
 import { criarMundo, type Mundo } from "@/simulacao/mundo";
+import { REGIAO_GUAIBA_RS } from "@/simulacao/regioes";
 import { criarAgenteExpedicao } from "./agenteExpedicao";
 import { criarAgenteGeofencing } from "./agenteGeofencing";
 import { criarAgenteLimiar } from "./agenteLimiar";
@@ -59,7 +60,7 @@ describe("agenteLimiar", () => {
   let ctx: ContextoAgente;
 
   beforeEach(() => {
-    mundo = criarMundo(2024);
+    mundo = criarMundo(2024, REGIAO_GUAIBA_RS);
     ctx = criarContexto(mundo);
   });
 
@@ -132,7 +133,7 @@ describe("agenteLimiar", () => {
 
 describe("agenteAntifadiga (integrado ao agenteLimiar)", () => {
   it("segundo disparo na mesma zona vira atualizacao, nao novo alerta — CA-ALT-05", () => {
-    const mundo = criarMundo(2024);
+    const mundo = criarMundo(2024, REGIAO_GUAIBA_RS);
     const ctx = criarContexto(mundo);
     const agente = criarAgenteLimiar();
 
@@ -152,7 +153,7 @@ describe("agenteAntifadiga (integrado ao agenteLimiar)", () => {
 
 describe("agenteGeofencing", () => {
   it("cria alerta preditivo com lead time quando a mancha alcanca a zona — CA-ALT-03", () => {
-    const mundo = criarMundo(2024);
+    const mundo = criarMundo(2024, REGIAO_GUAIBA_RS);
     const ctx = criarContexto(mundo, 12);
     ctx.estado.cotaPrevistaM = 12;
     ctx.estado.exposicao = mundo.zonas.slice(0, 2).map((z) => ({
@@ -172,7 +173,7 @@ describe("agenteGeofencing", () => {
   });
 
   it("nao cria alerta quando nenhuma zona e alcancada", () => {
-    const mundo = criarMundo(2024);
+    const mundo = criarMundo(2024, REGIAO_GUAIBA_RS);
     const ctx = criarContexto(mundo);
     ctx.estado.exposicao = [];
     criarAgenteGeofencing().aoTick(ctx);
@@ -182,7 +183,7 @@ describe("agenteGeofencing", () => {
 
 describe("agenteRedator", () => {
   it("gera boletim em rascunho citando as fontes consultadas — CA-LLM-01", () => {
-    const mundo = criarMundo(2024);
+    const mundo = criarMundo(2024, REGIAO_GUAIBA_RS);
     const ctx = criarContexto(mundo);
     const zona = mundo.zonas[0];
     if (!zona) throw new Error("sem zona");
@@ -224,7 +225,7 @@ describe("agenteRedator", () => {
   });
 
   it("nao redige boletim para alerta ainda candidato", () => {
-    const mundo = criarMundo(2024);
+    const mundo = criarMundo(2024, REGIAO_GUAIBA_RS);
     const ctx = criarContexto(mundo);
     const zona = mundo.zonas[0];
     if (!zona) throw new Error("sem zona");
@@ -249,7 +250,7 @@ describe("agenteRedator", () => {
 // Este bloco e o coracao demonstrativo da aplicacao.
 describe("agenteExpedicao — RNF-18", () => {
   function contextoComAlerta(estado: "candidato" | "validado"): ContextoAgente {
-    const mundo = criarMundo(2024);
+    const mundo = criarMundo(2024, REGIAO_GUAIBA_RS);
     const ctx = criarContexto(mundo);
     const zona = mundo.zonas[0];
     if (!zona) throw new Error("sem zona");

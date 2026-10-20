@@ -4,6 +4,7 @@ import { CENARIOS } from "@/simulacao/cenarios";
 import { Motor } from "@/simulacao/motor";
 import type { Evento } from "@/simulacao/barramento";
 import { CAMADAS_IDS, visibilidadePadrao, type CamadaId } from "@/mapa/visibilidade";
+import { buscarRotaOsrm } from "@/mapa/roteamento";
 import { alternarEstadoAtivo, estadosIniciaisAtivos } from "./gemeo";
 
 export type Pagina = "operacional" | "agentes" | "alertas";
@@ -39,6 +40,8 @@ interface EstadoLoja {
   /** Contador de mudanca: o motor e mutavel, entao o React observa este numero. */
   versao: number;
   boletimAberto: string | null;
+  /** Alerta aberto no modal de dossie, ou null quando o modal esta fechado. */
+  dossieAlertaAberto: string | null;
   /**
    * Resultado de autenticarNoPortal() (mapa/portal.ts). `undefined` enquanto
    * a verificacao ainda nao terminou (ou o modo Enterprise esta desligado).
@@ -75,6 +78,7 @@ interface EstadoLoja {
   reiniciar(): void;
   definirPortalAutenticado(valor: boolean): void;
   abrirBoletim(id: string | null): void;
+  abrirDossieAlerta(id: string | null): void;
   validarAlerta(alertaId: string): void;
   descartarAlerta(alertaId: string, motivo: string): void;
   aprovarBoletim(boletimId: string, texto: string): void;
@@ -106,6 +110,7 @@ export const useSimulacao = create<EstadoLoja>((set, get) => ({
   velocidadeIndice: 1,
   versao: 0,
   boletimAberto: null,
+  dossieAlertaAberto: null,
   portalAutenticado: undefined,
   estadosAtivos: estadosIniciaisAtivos(motorInicial.mundo.ativos),
   pagina: "operacional",
@@ -136,6 +141,7 @@ export const useSimulacao = create<EstadoLoja>((set, get) => ({
       cenarioId: id,
       versao: 0,
       boletimAberto: null,
+      dossieAlertaAberto: null,
       estadosAtivos: estadosIniciaisAtivos(motor.mundo.ativos),
       camadasVisiveis: visibilidadePadrao(),
     });
@@ -150,6 +156,7 @@ export const useSimulacao = create<EstadoLoja>((set, get) => ({
       velocidadeIndice: 1,
       versao: 0,
       boletimAberto: null,
+      dossieAlertaAberto: null,
       estadosAtivos: estadosIniciaisAtivos(motor.mundo.ativos),
       camadasVisiveis: visibilidadePadrao(),
     });
@@ -161,6 +168,10 @@ export const useSimulacao = create<EstadoLoja>((set, get) => ({
 
   abrirBoletim(id) {
     set({ boletimAberto: id });
+  },
+
+  abrirDossieAlerta(id) {
+    set({ dossieAlertaAberto: id });
   },
 
   validarAlerta(alertaId) {
@@ -190,8 +201,24 @@ export const useSimulacao = create<EstadoLoja>((set, get) => ({
   },
 
   despacharEquipe(estacaoId) {
-    const despacho = get().motor.despacharEquipe(estacaoId);
+    const motor = get().motor;
+    const despacho = motor.despacharEquipe(estacaoId);
     set((s) => ({ versao: s.versao + 1 }));
+
+    // Fire-and-forget: tenta trocar a rota em L por uma rota real de ruas
+    // via OSRM. Falhas (sem rede, timeout, CORS) sao engolidas; a demo
+    // segue com a rota ja desenhada. So aplica se o despacho ainda esta
+    // em "preparando" quando a resposta chegar — ver atualizarRotaDespacho.
+    if (despacho) {
+      void buscarRotaOsrm(despacho.origem, despacho.destino).then((pontos) => {
+        if (!pontos) return;
+        if (motor !== get().motor) return; // cenario trocou, descarta
+        if (motor.atualizarRotaDespacho(despacho.despachoId, pontos)) {
+          set((s) => ({ versao: s.versao + 1 }));
+        }
+      });
+    }
+
     return despacho !== null;
   },
 

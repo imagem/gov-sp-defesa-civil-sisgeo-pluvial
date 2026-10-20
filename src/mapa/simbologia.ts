@@ -81,25 +81,52 @@ export const SIMBOLOS = {
     outline: new SimpleLineSymbol({ color: [103, 232, 249, 0.9], width: 1 }),
   }),
 
-  /** Mancha de inundacao: opacidade acompanha a intensidade do evento. */
-  mancha: (intensidade: number) =>
-    new SimpleFillSymbol({
-      color: [59, 130, 246, Math.min(0.18 + intensidade * 0.32, 0.55)],
-      outline: new SimpleLineSymbol({ color: [147, 197, 253, 0.95], width: 2 }),
-    }),
+  /**
+   * Mancha afetada pelo evento. "agua" (azul fluvial) e o padrao de bacia
+   * ribeirinha; "encosta" (ocre/terra) representa massa de solo mobilizada
+   * em escorregamentos, apropriado para a Serra do Mar.
+   */
+  mancha: (intensidade: number, paleta: "agua" | "encosta" = "agua") => {
+    const alfa = Math.min(0.18 + intensidade * 0.32, 0.55);
+    const corInterna: [number, number, number] =
+      paleta === "encosta" ? [161, 98, 7] : [59, 130, 246];
+    const corContorno: [number, number, number] =
+      paleta === "encosta" ? [217, 119, 6] : [147, 197, 253];
+    return new SimpleFillSymbol({
+      color: [...corInterna, alfa],
+      outline: new SimpleLineSymbol({ color: [...corContorno, 0.95], width: 2 }),
+    });
+  },
 
-  zona: (grauRisco: "alto" | "muito_alto", sobAlerta: boolean) =>
-    new SimpleFillSymbol({
-      color: sobAlerta
-        ? [244, 63, 94, 0.4]
-        : grauRisco === "muito_alto"
-          ? [251, 146, 60, 0.18]
-          : [251, 191, 36, 0.12],
-      outline: new SimpleLineSymbol({
-        color: sobAlerta ? [244, 63, 94, 1] : [251, 191, 36, 0.7],
-        width: sobAlerta ? 2.5 : 1,
-      }),
-    }),
+  /**
+   * Zona de risco. A cor base agora depende do TIPO (inundacao vs
+   * deslizamento) alem do grau de risco; alerta ativo prevalece sobre
+   * ambos. Inundacao usa a paleta amarelo/laranja original (bacias
+   * ribeirinhas); deslizamento usa vermelho-terra/tijolo, que distingue
+   * sem precisar de legenda.
+   */
+  zona: (
+    grauRisco: "alto" | "muito_alto",
+    tipo: "inundacao" | "deslizamento",
+    sobAlerta: boolean,
+  ) => {
+    if (sobAlerta) {
+      return new SimpleFillSymbol({
+        color: [244, 63, 94, 0.4],
+        outline: new SimpleLineSymbol({ color: [244, 63, 94, 1], width: 2.5 }),
+      });
+    }
+    if (tipo === "deslizamento") {
+      return new SimpleFillSymbol({
+        color: grauRisco === "muito_alto" ? [185, 28, 28, 0.22] : [220, 38, 38, 0.14],
+        outline: new SimpleLineSymbol({ color: [185, 28, 28, 0.8], width: 1.2 }),
+      });
+    }
+    return new SimpleFillSymbol({
+      color: grauRisco === "muito_alto" ? [251, 146, 60, 0.18] : [251, 191, 36, 0.12],
+      outline: new SimpleLineSymbol({ color: [251, 191, 36, 0.7], width: 1 }),
+    });
+  },
 
   /**
    * Estacao de monitoramento: a silhueta diz o que ela mede (funil de

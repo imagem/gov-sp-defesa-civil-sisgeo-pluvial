@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { CENARIOS } from "@/simulacao/cenarios";
+import { REGIOES_VISIVEIS } from "@/simulacao/regioes";
 import {
   OPERADOR_CARGO,
   OPERADOR_CODINOME,
@@ -41,7 +42,7 @@ function iniciais(nome: string): string {
     .join("");
 }
 
-type Menu = "cenario" | "notificacoes" | "perfil" | null;
+type Menu = "regiao" | "cenario" | "notificacoes" | "perfil" | null;
 
 export default function Cabecalho() {
   const { motor, cenarioId, rodando, velocidadeIndice, portalAutenticado } = useSimulacao();
@@ -144,18 +145,67 @@ export default function Cabecalho() {
         ))}
       </button>
 
+      <div ref={menuAberto === "regiao" ? menuRef : undefined} style={{ position: "relative" }}>
+        <button
+          type="button"
+          className="cabecalho-pill"
+          onClick={() => setMenuAberto((m) => (m === "regiao" ? null : "regiao"))}
+          aria-expanded={menuAberto === "regiao"}
+          aria-label="Trocar região"
+        >
+          <span>{cenario?.regiao.nome ?? "Região"}</span>
+          {" ▾"}
+        </button>
+        {menuAberto === "regiao" ? (
+          <div className="cabecalho-popover">
+            {REGIOES_VISIVEIS.map((r) => {
+              const primeiroDaRegiao = CENARIOS.find((c) => c.regiao.id === r.id);
+              const ativa = cenario?.regiao.id === r.id;
+              return (
+                <button
+                  key={r.id}
+                  type="button"
+                  className="botao"
+                  disabled={!primeiroDaRegiao}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    textAlign: "left",
+                    marginBottom: 6,
+                    borderColor: ativa ? "var(--cor-acento)" : undefined,
+                  }}
+                  onClick={() => {
+                    if (!primeiroDaRegiao) return;
+                    trocarCenario(primeiroDaRegiao.id);
+                    setMenuAberto(null);
+                  }}
+                >
+                  <div>{r.nome}</div>
+                  <div style={{ fontSize: 10, color: "var(--cor-texto-fraco)", marginTop: 2 }}>
+                    {r.uf}
+                    {primeiroDaRegiao ? "" : " — sem cenário"}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+      </div>
+
       <div ref={menuAberto === "cenario" ? menuRef : undefined} style={{ position: "relative" }}>
         <button
           type="button"
           className="cabecalho-pill"
           onClick={() => setMenuAberto((m) => (m === "cenario" ? null : "cenario"))}
           aria-expanded={menuAberto === "cenario"}
+          aria-label="Trocar cenário"
         >
-          {cenario?.nome ?? "Cenário"} {"▾"}
+          <span>{cenario?.nome ?? "Cenário"}</span>
+          {" ▾"}
         </button>
         {menuAberto === "cenario" ? (
           <div className="cabecalho-popover">
-            {CENARIOS.map((c) => (
+            {CENARIOS.filter((c) => c.regiao.id === cenario?.regiao.id).map((c) => (
               <button
                 key={c.id}
                 type="button"
@@ -172,14 +222,14 @@ export default function Cabecalho() {
                   setMenuAberto(null);
                 }}
               >
-                {c.nome}
+                <div>{c.nome}</div>
+                {modoTecnico ? (
+                  <div style={{ fontSize: 10, color: "var(--cor-texto-fraco)", marginTop: 2 }}>
+                    {c.requisitosDestacados.join(" · ")}
+                  </div>
+                ) : null}
               </button>
             ))}
-            {cenario && modoTecnico ? (
-              <p style={{ fontSize: 10, color: "var(--cor-texto-fraco)", margin: "6px 0 0" }}>
-                Requisitos em foco: {cenario.requisitosDestacados.join(" · ")}
-              </p>
-            ) : null}
           </div>
         ) : null}
       </div>

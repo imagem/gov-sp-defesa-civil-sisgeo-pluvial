@@ -58,8 +58,8 @@ describe("estimarDeslocamentoMin", () => {
   });
 
   it("respeita o piso e o teto de deslocamento", () => {
-    expect(estimarDeslocamentoMin(tracarRota([0, 0], [0, 0], "E-001"))).toBe(12);
-    expect(estimarDeslocamentoMin(tracarRota([0, 0], [50, 0], "E-001"))).toBe(110);
+    expect(estimarDeslocamentoMin(tracarRota([0, 0], [0, 0], "E-001"))).toBe(40);
+    expect(estimarDeslocamentoMin(tracarRota([0, 0], [50, 0], "E-001"))).toBe(240);
   });
 });
 

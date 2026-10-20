@@ -58,12 +58,17 @@ const PREPARO_MIN = 12;
 
 /**
  * Velocidade média da viatura em deslocamento urbano, em graus de latitude
- * por hora. Equivale a cerca de 30 km/h — trânsito, semáforos e acesso a
- * via não pavimentada já embutidos.
+ * por hora. Equivale a cerca de 17 km/h — ritmo honesto de um deslocamento
+ * de plantão em trânsito denso, com paradas em semáforos, chuva no para-brisa
+ * e eventual trecho de via não pavimentada ou alagada.
+ *
+ * Mais baixo que a cruise speed urbana de propósito: num evento climático,
+ * o tempo até normalizar e a sensação de "a viatura não voa" sao parte da
+ * mensagem que a demo precisa carregar.
  */
-const VELOCIDADE_GRAUS_POR_HORA = 0.27;
-const DESLOCAMENTO_MIN_MINUTOS = 12;
-const DESLOCAMENTO_MAX_MINUTOS = 110;
+const VELOCIDADE_GRAUS_POR_HORA = 0.10;
+const DESLOCAMENTO_MIN_MINUTOS = 40;
+const DESLOCAMENTO_MAX_MINUTOS = 240;
 
 /** Tempo de atendimento no local, por motivo do despacho. */
 const ATENDIMENTO_POR_MOTIVO: Record<string, number> = {
@@ -153,6 +158,30 @@ export interface ParametrosDespacho {
   readonly origem: Coordenada;
   readonly destino: Coordenada;
   readonly tsDespacho: string;
+}
+
+/**
+ * Substitui apenas a GEOMETRIA da rota de um despacho, preservando os
+ * tempos ja estimados. Util quando um servico de rota real (OSRM) devolve
+ * um tracado melhor que a rota em L semeada, sem alterar o deslocamentoMin
+ * que o operador ja esta vendo.
+ *
+ * Caller e responsavel por so chamar quando o despacho ainda esta em
+ * `preparando` — caso contrario a viatura "teleporta" para o novo tracado.
+ */
+export function substituirRota(
+  despacho: DespachoCampo,
+  pontos: readonly Coordenada[],
+): DespachoCampo {
+  if (pontos.length < 2) return despacho;
+  let comprimentoGraus = 0;
+  for (let i = 1; i < pontos.length; i++) {
+    comprimentoGraus += distanciaGraus(pontos[i - 1]!, pontos[i]!);
+  }
+  return {
+    ...despacho,
+    rota: { pontos: [...pontos], comprimentoGraus },
+  };
 }
 
 export function criarDespacho(p: ParametrosDespacho): DespachoCampo {

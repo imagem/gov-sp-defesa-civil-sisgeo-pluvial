@@ -29,8 +29,13 @@ const COR_PULSO_ZONA: Record<TipoPulsoZona, readonly [number, number, number]> =
  * Suavizacao do deslocamento das equipes: a cada quadro a posicao desenhada
  * caminha esta fracao da distancia ate a posicao-alvo do tick. Sem isso a
  * viatura saltaria em degraus a cada tick (10 min simulados por passo).
+ *
+ * Valor baixo (0.04) de proposito: numa demo que roda em 4x e 12x, uma
+ * suavizacao agressiva faz a viatura "voar" entre dois ticks e parecer
+ * acelerada em cenario sob chuva. Mais pesada, ela ganha a leitura
+ * correta de "viatura de plantao, nao helicoptero".
  */
-const SUAVIZACAO_EQUIPE = 0.08;
+const SUAVIZACAO_EQUIPE = 0.025;
 /** Abaixo desta diferenca de progresso, assume-se a posicao-alvo. */
 const EPSILON_EQUIPE = 0.0005;
 
@@ -247,10 +252,11 @@ export class GerenciadorCamadas {
       this.zonas.add(
         new Graphic({
           geometry: paraPolygon(zona.geometria),
-          symbol: SIMBOLOS.zona(zona.grauRisco, zonasSobAlerta.has(zona.zonaId)),
+          symbol: SIMBOLOS.zona(zona.grauRisco, zona.tipo, zonasSobAlerta.has(zona.zonaId)),
           attributes: {
             zonaId: zona.zonaId,
             nome: zona.nome,
+            tipo: zona.tipo,
             populacao: zona.populacaoEstimada,
           },
         }),
@@ -266,7 +272,7 @@ export class GerenciadorCamadas {
       this.mancha.add(
         new Graphic({
           geometry: paraPolygon(estado.mancha),
-          symbol: SIMBOLOS.mancha(intensidade),
+          symbol: SIMBOLOS.mancha(intensidade, mundo.regiao.paletaMancha ?? "agua"),
         }),
       );
     }

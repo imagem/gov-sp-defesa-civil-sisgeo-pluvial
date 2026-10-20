@@ -3,6 +3,7 @@ import { criarAleatorio } from "@/dominio/prng";
 import { RelogioSimulado } from "@/dominio/relogio";
 import { Barramento, type TipoEvento } from "@/simulacao/barramento";
 import { criarMundo, type Mundo } from "@/simulacao/mundo";
+import { REGIAO_GUAIBA_RS } from "@/simulacao/regioes";
 import { criarAgenteHidrologico } from "./agenteHidrologico";
 import { criarAgenteIngestao } from "./agenteIngestao";
 import { criarAgenteQualidade } from "./agenteQualidade";
@@ -44,7 +45,7 @@ describe("agenteIngestao", () => {
   let ctx: ContextoAgente;
 
   beforeEach(() => {
-    mundo = criarMundo(2024);
+    mundo = criarMundo(2024, REGIAO_GUAIBA_RS);
     ctx = criarContexto(mundo);
   });
 
@@ -106,7 +107,7 @@ describe("agenteIngestao", () => {
 
 describe("agenteQualidade", () => {
   it("reprova leitura fora de faixa e publica o evento — RF-ING-04", () => {
-    const mundo = criarMundo(2024);
+    const mundo = criarMundo(2024, REGIAO_GUAIBA_RS);
     const ctx = criarContexto(mundo);
     const estacao = mundo.estacoes[0];
     if (!estacao) throw new Error("sem estacao");
@@ -132,7 +133,7 @@ describe("agenteQualidade", () => {
   });
 
   it("nao remove a leitura reprovada do estado", () => {
-    const mundo = criarMundo(2024);
+    const mundo = criarMundo(2024, REGIAO_GUAIBA_RS);
     const ctx = criarContexto(mundo);
     const estacao = mundo.estacoes[0];
     if (!estacao) throw new Error("sem estacao");
@@ -154,7 +155,7 @@ describe("agenteQualidade", () => {
 
 describe("agenteRede", () => {
   it("marca como silenciosa a estacao sem leitura por 3 periodos — CA-NET-01", () => {
-    const mundo = criarMundo(2024);
+    const mundo = criarMundo(2024, REGIAO_GUAIBA_RS);
     const ctx = criarContexto(mundo);
     const estacao = ctx.estado.estacoes[0];
     if (!estacao) throw new Error("sem estacao");
@@ -168,7 +169,7 @@ describe("agenteRede", () => {
   });
 
   it("mantem operante a estacao que leu dentro do periodo", () => {
-    const mundo = criarMundo(2024);
+    const mundo = criarMundo(2024, REGIAO_GUAIBA_RS);
     const ctx = criarContexto(mundo);
     const estacao = ctx.estado.estacoes[0];
     if (!estacao) throw new Error("sem estacao");
@@ -178,7 +179,7 @@ describe("agenteRede", () => {
   });
 
   it("ignora estacao que nunca leu (mundo recem-criado)", () => {
-    const mundo = criarMundo(2024);
+    const mundo = criarMundo(2024, REGIAO_GUAIBA_RS);
     const ctx = criarContexto(mundo);
     criarAgenteRede().aoTick(ctx);
     expect(ctx.estado.estacoes.every((e) => e.situacao === "operante")).toBe(true);
@@ -187,7 +188,7 @@ describe("agenteRede", () => {
 
 describe("agenteHidrologico", () => {
   it("gera previsoes de nivel com incerteza e publica o evento", () => {
-    const mundo = criarMundo(2024);
+    const mundo = criarMundo(2024, REGIAO_GUAIBA_RS);
     const ctx = criarContexto(mundo);
     ctx.estado.nivelAtualM = 3;
     ctx.estado.intensidadeChuvaMmH = 12;
@@ -202,7 +203,7 @@ describe("agenteHidrologico", () => {
   });
 
   it("expoe a cota prevista de 12 h no estado", () => {
-    const mundo = criarMundo(2024);
+    const mundo = criarMundo(2024, REGIAO_GUAIBA_RS);
     const ctx = criarContexto(mundo);
     ctx.estado.nivelAtualM = 3;
 
@@ -213,7 +214,7 @@ describe("agenteHidrologico", () => {
   });
 
   it("gera mancha de inundacao e publica o evento espacial", () => {
-    const mundo = criarMundo(2024);
+    const mundo = criarMundo(2024, REGIAO_GUAIBA_RS);
     const ctx = criarContexto(mundo);
     ctx.estado.nivelAtualM = 6;
     ctx.estado.intensidadeChuvaMmH = 25;
@@ -225,7 +226,7 @@ describe("agenteHidrologico", () => {
   });
 
   it("calcula exposicao quando a mancha alcanca zonas", () => {
-    const mundo = criarMundo(2024);
+    const mundo = criarMundo(2024, REGIAO_GUAIBA_RS);
     const ctx = criarContexto(mundo);
     ctx.estado.nivelAtualM = 12;
     ctx.estado.intensidadeChuvaMmH = 40;
