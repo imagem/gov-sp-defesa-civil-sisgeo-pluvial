@@ -1,8 +1,7 @@
 {
   "name": "demo-gov-sp-defesa-civil",
   "version": "0.1.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Sala de Situação para alerta precoce de cheias — demonstração ArcGIS Maps SDK + React.",
   "scripts": {
     "test": "vitest run",
     "dev": "vite",
@@ -14,6 +13,9 @@
   "keywords": [],
   "type": "module",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@arcgis/core": "^5.1.23",
     "@xyflow/react": "^12.11.6",
